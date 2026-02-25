@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050d1a; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+  canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .container { display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative; z-index: 1; }
+  .rings { position: absolute; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; }
+  .ring { position: absolute; border-radius: 50%; border: 2px solid; animation: pulse 2.5s ease-in-out infinite; }
+  .ring:nth-child(1){width:200px;height:200px;border-color:#00f0ff44;animation-delay:0s}
+  .ring:nth-child(2){width:250px;height:250px;border-color:#00f0ff28;animation-delay:.4s}
+  .ring:nth-child(3){width:300px;height:300px;border-color:#00f0ff14;animation-delay:.8s}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.05);opacity:1}}
+  svg.jaconda { width: 180px; height: 180px; filter: drop-shadow(0 0 18px #00f0ff) drop-shadow(0 0 40px #007aff88); animation: float 3s ease-in-out infinite; }
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .creature-wrap { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; }
+  .sparkle { position: absolute; width: 6px; height: 6px; background: #00f0ff; border-radius: 50%; animation: sparkle 2s ease-in-out infinite; box-shadow: 0 0 8px #00f0ff; }
+  .sparkle:nth-child(1){top:30px;left:60px;animation-delay:0s}
+  .sparkle:nth-child(2){top:50px;right:55px;animation-delay:.5s}
+  .sparkle:nth-child(3){bottom:60px;left:45px;animation-delay:1s}
+  .sparkle:nth-child(4){bottom:40px;right:65px;animation-delay:1.5s}
+  .sparkle:nth-child(5){top:80px;left:30px;width:4px;height:4px;animation-delay:.8s}
+  .sparkle:nth-child(6){top:90px;right:30px;width:4px;height:4px;animation-delay:1.3s}
+  @keyframes sparkle{0%,100%{transform:scale(.5);opacity:.3}50%{transform:scale(1.4);opacity:1}}
+  .activate-text { font-size: 13px; font-weight: 700; letter-spacing: 6px; text-transform: uppercase; color: #00c8ff99; animation: flicker 3s ease-in-out infinite; }
+  .title-text { font-size: 42px; font-weight: 900; letter-spacing: 6px; text-transform: uppercase; background: linear-gradient(90deg,#00f0ff,#007aff,#a855f7,#00f0ff); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 3s linear infinite; filter: drop-shadow(0 0 12px #00f0ff88); }
+  @keyframes shimmer{0%{background-position:0% center}100%{background-position:300% center}}
+  @keyframes flicker{0%,100%{opacity:.6}50%{opacity:1}}
+  .underline-bar { width: 200px; height: 2px; background: linear-gradient(90deg,transparent,#00f0ff,transparent); animation: flicker 2s ease-in-out infinite; }
+  .btn { margin-top: 8px; padding: 12px 36px; border: 2px solid #00f0ff; background: transparent; color: #00f0ff; font-size: 13px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; border-radius: 40px; cursor: pointer; position: relative; overflow: hidden; transition: color 0.3s; }
+  .btn::before { content:''; position:absolute; inset:0; background:#00f0ff; transform:scaleX(0); transform-origin:left; transition:transform 0.3s ease; z-index:0; }
+  .btn:hover::before { transform:scaleX(1); }
+  .btn:hover { color: #050d1a; }
+  .btn span { position: relative; z-index: 1; }
+  .btn:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+<canvas id="fw"></canvas>
+<div class="container">
+  <div class="creature-wrap">
+    <div class="rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+    <div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div>
+    <div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div>
+    <svg class="jaconda" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="42" cy="115" rx="28" ry="14" fill="#007aff" opacity="0.7" transform="rotate(-30 42 115)"/>
+      <ellipse cx="158" cy="115" rx="28" ry="14" fill="#007aff" opacity="0.7" transform="rotate(30 158 115)"/>
+      <ellipse cx="38" cy="110" rx="12" ry="5" fill="#00f0ff" opacity="0.4" transform="rotate(-30 38 110)"/>
+      <ellipse cx="162" cy="110" rx="12" ry="5" fill="#00f0ff" opacity="0.4" transform="rotate(30 162 110)"/>
+      <ellipse cx="100" cy="118" rx="52" ry="44" fill="#0a1f44"/>
+      <ellipse cx="100" cy="118" rx="52" ry="44" fill="url(#bodyGrad)"/>
+      <circle cx="100" cy="82" r="52" fill="url(#headGrad)"/>
+      <circle cx="62" cy="42" r="14" fill="#1a3a6e"/>
+      <circle cx="138" cy="42" r="14" fill="#1a3a6e"/>
+      <circle cx="62" cy="42" r="8" fill="#00c8ff" opacity="0.5"/>
+      <circle cx="138" cy="42" r="8" fill="#00c8ff" opacity="0.5"/>
+      <ellipse cx="82" cy="80" rx="18" ry="20" fill="white"/>
+      <ellipse cx="118" cy="80" rx="18" ry="20" fill="white"/>
+      <circle cx="84" cy="82" r="12" fill="#007aff"/>
+      <circle cx="120" cy="82" r="12" fill="#007aff"/>
+      <circle cx="86" cy="83" r="7" fill="#001a33"/>
+      <circle cx="122" cy="83" r="7" fill="#001a33"/>
+      <circle cx="90" cy="78" r="3" fill="white" opacity="0.9"/>
+      <circle cx="126" cy="78" r="3" fill="white" opacity="0.9"/>
+      <circle cx="83" cy="87" r="1.5" fill="white" opacity="0.5"/>
+      <circle cx="119" cy="87" r="1.5" fill="white" opacity="0.5"/>
+      <ellipse cx="68" cy="96" rx="10" ry="6" fill="#00f0ff" opacity="0.25"/>
+      <ellipse cx="132" cy="96" rx="10" ry="6" fill="#00f0ff" opacity="0.25"/>
+      <path d="M88 100 Q100 112 112 100" stroke="#00f0ff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="100" cy="122" rx="30" ry="24" fill="#0d2a55" opacity="0.8"/>
+      <ellipse cx="100" cy="122" rx="20" ry="16" fill="#00f0ff" opacity="0.08"/>
+      <ellipse cx="80" cy="158" rx="14" ry="8" fill="#1a3a6e"/>
+      <ellipse cx="120" cy="158" rx="14" ry="8" fill="#1a3a6e"/>
+      <line x1="100" y1="32" x2="100" y2="14" stroke="#00f0ff" stroke-width="2"/>
+      <circle cx="100" cy="11" r="5" fill="#00f0ff" opacity="0.9"/>
+      <circle cx="100" cy="11" r="3" fill="white"/>
+      <defs>
+        <radialGradient id="headGrad" cx="40%" cy="35%">
+          <stop offset="0%" stop-color="#1a4a8a"/><stop offset="100%" stop-color="#0a1f44"/>
+        </radialGradient>
+        <radialGradient id="bodyGrad" cx="50%" cy="30%">
+          <stop offset="0%" stop-color="#1a4a8a"/><stop offset="100%" stop-color="#071228"/>
+        </radialGradient>
+      </defs>
+    </svg>
+  </div>
+  <div class="activate-text">Activate</div>
+  <div class="title-text">JACONDA</div>
+  <div class="underline-bar"></div>
+  <button class="btn" id="engageBtn"><span>Engage</span></button>
+</div>
+
+<script>
+const canvas = document.getElementById('fw');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [], rockets = [], running = false, animId, lastLaunch = 0;
+
+const palettes = [
+  ['#00f0ff','#007aff','#00aaff','#80f0ff'],
+  ['#ff6ef7','#a855f7','#d946ef','#f0abfc'],
+  ['#ffe066','#ffaa00','#ff6600','#fff0a0'],
+  ['#00ffaa','#00ff66','#aaffdd','#00cc88'],
+  ['#ff4466','#ff0044','#ff88aa','#ffddee'],
+  ['#ffffff','#00f0ff','#a855f7','#ffe066'],
+];
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
+
+// --- Rocket (launches upward, then explodes) ---
+class Rocket {
+  constructor() {
+    this.x = W * 0.1 + Math.random() * W * 0.8;
+    this.y = H;
+    this.tx = W * 0.1 + Math.random() * W * 0.8;
+    this.ty = H * 0.1 + Math.random() * H * 0.5;
+    this.speed = 14 + Math.random() * 8;
+    const dx = this.tx - this.x, dy = this.ty - this.y;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    this.vx = (dx/dist)*this.speed;
+    this.vy = (dy/dist)*this.speed;
+    this.trail = [];
+    this.palette = palettes[Math.floor(Math.random()*palettes.length)];
+    this.exploded = false;
+    this.type = Math.floor(Math.random()*5); // explosion type
+  }
+  update() {
+    this.trail.push({x:this.x,y:this.y});
+    if(this.trail.length>18) this.trail.shift();
+    this.x += this.vx;
+    this.y += this.vy;
+    // explode when near target
+    if(Math.abs(this.x-this.tx)<18 && Math.abs(this.y-this.ty)<18) {
+      this.explode();
+      return true;
+    }
+    return false;
+  }
+  draw() {
+    for(let i=0;i<this.trail.length;i++){
+      const t=this.trail[i];
+      const a=(i/this.trail.length)*0.7;
+      ctx.beginPath();
+      ctx.arc(t.x,t.y,2.5*(i/this.trail.length),0,Math.PI*2);
+      ctx.fillStyle=this.palette[0];
+      ctx.globalAlpha=a;
+      ctx.shadowBlur=8; ctx.shadowColor=this.palette[0];
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,3,0,Math.PI*2);
+    ctx.fillStyle='#ffffff';
+    ctx.globalAlpha=1;
+    ctx.shadowBlur=16; ctx.shadowColor=this.palette[0];
+    ctx.fill();
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+  }
+  explode() {
+    this.exploded=true;
+    const count=120+Math.floor(Math.random()*80);
+    if(this.type===0) burstRound(this.x,this.y,count,this.palette);
+    else if(this.type===1) burstStar(this.x,this.y,count,this.palette);
+    else if(this.type===2) burstRing(this.x,this.y,this.palette);
+    else if(this.type===3) burstDouble(this.x,this.y,this.palette);
+    else burstCrystal(this.x,this.y,this.palette);
+    // flash
+    particles.push(new Flash(this.x,this.y,this.palette[0]));
+  }
+}
+
+// --- Explosion types ---
+function burstRound(x,y,count,pal) {
+  for(let i=0;i<count;i++) {
+    const angle=Math.random()*Math.PI*2;
+    const speed=2+Math.random()*7;
+    particles.push(new Spark(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,pal[Math.floor(Math.random()*pal.length)]));
+  }
+}
+function burstStar(x,y,count,pal) {
+  const arms=7+Math.floor(Math.random()*5);
+  for(let i=0;i<count;i++) {
+    const arm=Math.floor(i/count*arms);
+    const baseAngle=(arm/arms)*Math.PI*2;
+    const spread=0.18;
+    const angle=baseAngle+(Math.random()-0.5)*spread;
+    const speed=3+Math.random()*8;
+    particles.push(new Spark(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,pal[arm%pal.length]));
+  }
+}
+function burstRing(x,y,pal) {
+  const count=160;
+  for(let i=0;i<count;i++){
+    const angle=(i/count)*Math.PI*2;
+    const speed=5+Math.random()*2;
+    particles.push(new Spark(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,pal[i%pal.length],true));
+  }
+}
+function burstDouble(x,y,pal) {
+  burstRound(x,y,80,pal);
+  setTimeout(()=>{ if(running) burstRing(x,y,[pal[1],pal[2]]); },180);
+}
+function burstCrystal(x,y,pal) {
+  // twinkling slow particles
+  for(let i=0;i<100;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=0.5+Math.random()*5;
+    const p=new Spark(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,pal[Math.floor(Math.random()*pal.length)]);
+    p.twinkle=true; p.radius=2+Math.random()*3;
+    particles.push(p);
+  }
+}
+
+// --- Particle types ---
+class Spark {
+  constructor(x,y,vx,vy,color,ring=false) {
+    this.x=x; this.y=y; this.vx=vx; this.vy=vy; this.color=color;
+    this.alpha=1; this.decay=0.012+Math.random()*0.018;
+    this.radius=1.5+Math.random()*2.5;
+    this.trail=[]; this.ring=ring; this.twinkle=false;
+    this.gravity=ring?0.04:0.1;
+  }
+  update(){
+    this.trail.push({x:this.x,y:this.y});
+    if(this.trail.length>10) this.trail.shift();
+    this.vy+=this.gravity;
+    this.vx*=0.985; this.vy*=0.985;
+    this.x+=this.vx; this.y+=this.vy;
+    this.alpha-=this.decay;
+  }
+  draw(){
+    for(let i=0;i<this.trail.length;i++){
+      const t=this.trail[i];
+      ctx.beginPath();
+      ctx.arc(t.x,t.y,this.radius*(i/this.trail.length)*0.6,0,Math.PI*2);
+      ctx.fillStyle=this.color;
+      ctx.globalAlpha=(i/this.trail.length)*this.alpha*0.5;
+      ctx.fill();
+    }
+    const r=this.twinkle ? this.radius*(0.6+0.4*Math.sin(Date.now()*0.02+this.x)) : this.radius;
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,r,0,Math.PI*2);
+    ctx.fillStyle=this.color;
+    ctx.globalAlpha=this.alpha;
+    ctx.shadowBlur=12; ctx.shadowColor=this.color;
+    ctx.fill();
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+  }
+}
+
+class Flash {
+  constructor(x,y,color){ this.x=x; this.y=y; this.color=color; this.alpha=1; this.r=10; }
+  update(){ this.r+=18; this.alpha-=0.12; }
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=this.color;
+    ctx.globalAlpha=this.alpha*0.3;
+    ctx.shadowBlur=40; ctx.shadowColor=this.color;
+    ctx.fill();
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+  }
+}
+
+// --- Main loop ---
+function loop(ts) {
+  if(!running) return;
+  // dark fade trail
+  ctx.fillStyle='rgba(5,13,26,0.18)';
+  ctx.fillRect(0,0,W,H);
+
+  // launch rockets
+  if(ts-lastLaunch > 320) {
+    const burst=1+Math.floor(Math.random()*3);
+    for(let i=0;i<burst;i++) rockets.push(new Rocket());
+    lastLaunch=ts;
+  }
+
+  // update rockets
+  rockets=rockets.filter(r=>{ const done=r.update(); r.draw(); return !done; });
+
+  // update particles
+  particles=particles.filter(p=>{ p.update(); p.draw(); return p.alpha>0; });
+
+  animId=requestAnimationFrame(loop);
+}
+
+document.getElementById('engageBtn').addEventListener('click', function(){
+  if(running){
+    running=false; cancelAnimationFrame(animId);
+    ctx.clearRect(0,0,W,H);
+    particles=[]; rockets=[];
+    this.querySelector('span').textContent='Engage';
+  } else {
+    running=true; lastLaunch=0;
+    this.querySelector('span').textContent='Disengage';
+    requestAnimationFrame(loop);
+  }
+});
+</script>
+</body>
+</html>
